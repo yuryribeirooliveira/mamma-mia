@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- Configurações PWA iPhone -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Presente da Sabrina">
+    <link rel="apple-touch-icon" href="https://api.iconify.design/lucide:gift.svg?color=%23ff2a85">
+
+    <title>Para a Sabrina 💙 - Nosso Aniversário</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Pixel & Retrô -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'mamma-blue': '#0077be',
+                        'mamma-light-blue': '#e0f2fe',
+                        'mamma-deep': '#003B46',
+                        'mamma-pink': '#ff2a85',
+                        'mamma-yellow': '#ffb703',
+                        'pixel-bg': '#f4ebd0',
+                    },
+                    fontFamily: {
+                        pixel: ['"Press Start 2P"', 'monospace'],
+                        vt: ['"VT323"', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background: linear-gradient(180deg, #0077be 0%, #70e0d8 50%, #f4ebd0 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            image-rendering: pixelated;
+        }
+
+        /* Estilo de Borda Pixel 8-Bit */
+        .pixel-box {
+            position: relative;
+            background: #ffffff;
+            border: 4px solid #000000;
+            box-shadow: 
+                -4px 0 0 0 #000,
+                4px 0 0 0 #000,
+                0 -4px 0 0 #000,
+                0 4px 0 0 #000,
+                6px 6px 0 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .pixel-btn {
+            position: relative;
+            background: #ffb703;
+            border: 4px solid #000;
+            color: #000;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 11px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 0 #c28800;
+            transition: all 0.1s ease;
+            cursor: pointer;
+        }
+
+        .pixel-btn:active {
+            top: 4px;
+            box-shadow: 0 0 0 #c28800;
+        }
+
+        .pixel-btn-pink {
+            background: #ff2a85;
+            color: #fff;
+            box-shadow: 0 4px 0 #b3004b;
+        }
+        .pixel-btn-pink:active {
+            box-shadow: 0 0 0 #b3004b;
+        }
+
+        /* Animação Flutuante 8-bit */
+        @keyframes pixelFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        .float-pixel {
+            animation: pixelFloat 2s infinite steps(4);
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { filter: drop-shadow(0 0 5px #ffb703); }
+            50% { filter: drop-shadow(0 0 15px #ff2a85); }
+        }
+        .glow-pixel {
+            animation: pulseGlow 1.5s infinite;
+        }
+
+        /* Nuvens estilo Mamma Mia */
+        .pixel-cloud {
+            position: absolute;
+            background: #fff;
+            box-shadow: 
+                8px 0 0 #fff, -8px 0 0 #fff,
+                0 -8px 0 #fff, 0 8px 0 #fff,
+                16px 8px 0 #fff, -16px 8px 0 #fff;
+            opacity: 0.85;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4 text-gray-900 relative">
+
+    <!-- Audio Player com a URL MP3 do Catbox -->
+    <audio id="mammaAudio" loop preload="auto">
+        <source src="https://files.catbox.moe/j4om0u.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Elementos decorativos Mamma Mia -->
+    <div class="fixed top-4 left-4 w-12 h-12 bg-mamma-yellow border-4 border-black float-pixel z-0"></div>
+    <div class="pixel-cloud top-12 right-8 w-16 h-6 z-0"></div>
+    <div class="pixel-cloud top-32 left-12 w-24 h-8 z-0"></div>
+
+    <!-- BOTÃO FLUTUANTE DE MÚSICA -->
+    <div class="fixed top-4 right-4 z-50">
+        <button id="musicBtn" onclick="toggleAudio()" class="pixel-btn bg-white px-3 py-2 text-[10px] flex items-center gap-2">
+            <span id="musicIcon">🎵</span> <span id="musicText">LAY ALL YOUR LOVE ON ME</span>
+        </button>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <main class="w-full max-w-md z-10 relative my-auto">
+
+        <!-- ==================== TELA 1: PRESENTE ==================== -->
+        <section id="screen1" class="pixel-box p-6 text-center space-y-6">
+            <div class="inline-block bg-mamma-light-blue px-3 py-1 border-2 border-black font-pixel text-[10px] text-mamma-blue">
+                MAMMA MIA! UMA SURPRESA DA KALOKAIRI
+            </div>
+            
+            <h1 class="font-pixel text-sm text-mamma-pink leading-relaxed">
+                🎁 UM PRESENTE ESPECIAL PARA A SABRINA 🎁
+            </h1>
+
+            <div class="my-8 cursor-pointer group flex justify-center" onclick="openGift()">
+                <div class="relative float-pixel">
+                    <svg id="giftIcon" class="w-32 h-32 glow-pixel" viewBox="0 0 24 24" fill="none">
+                        <rect x="3" y="10" width="18" height="11" fill="#ff2a85" stroke="#000" stroke-width="1.5"/>
+                        <rect x="2" y="7" width="20" height="4" fill="#ff4097" stroke="#000" stroke-width="1.5"/>
+                        <rect x="10" y="7" width="4" height="14" fill="#ffb703"/>
+                        <rect x="2" y="8.5" width="20" height="1.5" fill="#ffb703"/>
+                        <path d="M7 4C7 2.5 9 2 12 5C15 2 17 2.5 17 4C17 6 14 7 12 7C10 7 7 6 7 4Z" fill="#ffb703" stroke="#000" stroke-width="1"/>
+                    </svg>
+                </div>
+            </div>
+
+            <p class="font-vt text-xl text-gray-700">
+                Toque na caixinha para abrir 🎁
+            </p>
+
+            <button onclick="openGift()" class="pixel-btn pixel-btn-pink w-full py-3 text-xs tracking-wider">
+                ABRIR PRESENTE
+            </button>
+        </section>
+
+        <!-- ==================== TELA 2: A PIADA DO GOLPE ==================== -->
+        <section id="screen2" class="pixel-box p-6 text-center space-y-6 hidden">
+            <div class="relative bg-white border-4 border-black p-4 mb-2 shadow-[4px_4px_0_#000]">
+                <p class="font-vt text-2xl text-mamma-deep font-bold leading-tight">
+                    "Amor... no nosso aniversário dia 5 fui te comprar um buquê lindo na internet, mas a loja era GOLPE! 🤡😭"
+                </p>
+                <div class="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[12px] border-t-black"></div>
+            </div>
+
+            <!-- Bonequinho Pixel com Buquê - Moreno, Cabelo Cacheado e Degradê (Corte Americano) -->
+            <div class="flex justify-center py-2">
+                <svg class="w-36 h-36 float-pixel" viewBox="0 0 64 64" fill="none">
+                    <!-- Degradê Lateral (Sombra) -->
+                    <rect x="23" y="10" width="3" height="12" fill="#7a5538"/>
+                    <rect x="38" y="10" width="3" height="12" fill="#7a5538"/>
+
+                    <!-- Cabelo Cacheado / Topete Americano -->
+                    <rect x="25" y="4" width="14" height="6" fill="#2d1b0e"/>
+                    <circle cx="27" cy="6" r="3" fill="#1a0f08"/>
+                    <circle cx="32" cy="5" r="3.5" fill="#2d1b0e"/>
+                    <circle cx="37" cy="6" r="3" fill="#1a0f08"/>
+                    <circle cx="29" cy="8" r="2.5" fill="#3d2514"/>
+                    <circle cx="35" cy="8" r="2.5" fill="#3d2514"/>
+
+                    <!-- Rosto Moreno -->
+                    <rect x="25" y="10" width="14" height="14" fill="#a0714f"/>
+
+                    <!-- Olhos e Sobrancelhas -->
+                    <rect x="27" y="13" width="3" height="1.5" fill="#000"/>
+                    <rect x="34" y="13" width="3" height="1.5" fill="#000"/>
+                    <rect x="27" y="15" width="2" height="3" fill="#000"/>
+                    <rect x="35" y="15" width="2" height="3" fill="#000"/>
+                    <rect x="28" y="15" width="1" height="1" fill="#fff"/>
+                    <rect x="36" y="15" width="1" height="1" fill="#fff"/>
+
+                    <!-- Sorriso -->
+                    <rect x="29" y="20" width="6" height="2" fill="#ff2a85"/>
+                    <rect x="30" y="20" width="4" height="1" fill="#fff"/>
+
+                    <!-- Corpo / Roupas -->
+                    <rect x="22" y="24" width="20" height="20" fill="#0077be"/>
+                    <rect x="28" y="24" width="8" height="20" fill="#ffffff"/>
+                    <rect x="24" y="44" width="6" height="14" fill="#003B46"/>
+                    <rect x="34" y="44" width="6" height="14" fill="#003B46"/>
+
+                    <!-- Buquê de Flores -->
+                    <g transform="translate(38, 20)">
+                        <polygon points="6,16 14,16 10,26" fill="#d4a373" stroke="#000" stroke-width="1"/>
+                        <circle cx="5" cy="10" r="4" fill="#ff2a85"/>
+                        <circle cx="11" cy="8" r="4" fill="#ffb703"/>
+                        <circle cx="8" cy="14" r="4" fill="#ff4097"/>
+                        <circle cx="13" cy="13" r="3.5" fill="#ff2a85"/>
+                        <circle cx="8" cy="8" r="2" fill="#ffffff"/>
+                    </g>
+                </svg>
+            </div>
+
+            <p class="font-vt text-2xl text-mamma-pink font-bold">
+                "Mas como em Mamma Mia 'Everything is new', aceite este buquê digital exclusivo como presente!" 💐💙
+            </p>
+
+            <button onclick="goToScreen(3)" class="pixel-btn pixel-btn-pink w-full py-3">
+                ACEITAR BUQUÊ E CONTINUAR 💐
+            </button>
+        </section>
+
+        <!-- ==================== TELA 3: PERGUNTA FUJONA ==================== -->
+        <section id="screen3" class="pixel-box p-6 text-center space-y-6 hidden min-h-[360px] flex flex-col justify-between">
+            <div class="space-y-4">
+                <span class="bg-mamma-yellow text-black font-pixel text-[10px] px-2 py-1 border border-black">
+                    QUESTIONÁRIO MAMMA MIA
+                </span>
+                <h2 class="font-pixel text-xs text-mamma-blue leading-relaxed">
+                    Aceita comemorar nosso aniversário de namoro comigo (sem cair em golpes)?
+                </h2>
+            </div>
+
+            <div id="buttonArea" class="relative w-full h-40 flex items-center justify-center gap-4">
+                <button onclick="acceptDate()" class="pixel-btn pixel-btn-pink px-6 py-3 text-sm z-10">
+                    SIM! 🥰
+                </button>
+
+                <button id="noBtn" 
+                        onmouseenter="runAway()" 
+                        onclick="runAway()" 
+                        ontouchstart="runAway(event)"
+                        class="pixel-btn bg-gray-300 px-6 py-3 text-sm absolute transition-all duration-150 ease-out z-20">
+                    NÃO 🛑
+                </button>
+            </div>
+
+            <p id="escapeHint" class="font-vt text-lg text-gray-500 italic">
+                (Dica: O botão "Não" tem fobia de compromisso!)
+            </p>
+        </section>
+
+        <!-- ==================== TELA 4: GALERIA POLAROID (13 FOTOS REAIS) ==================== -->
+        <section id="screen4" class="pixel-box p-4 text-center space-y-4 hidden">
+            <div class="flex justify-between items-center border-b-2 border-black pb-2">
+                <span class="font-pixel text-[10px] text-mamma-pink">ÁLBUM DE FOTOS DE NÓS DOIS</span>
+                <span id="photoCounter" class="font-pixel text-[10px] text-mamma-blue">1 / 13</span>
+            </div>
+
+            <div class="bg-white p-3 border-4 border-black shadow-[4px_4px_0_#000]">
+                <div class="relative w-full h-64 bg-gray-100 overflow-hidden border-2 border-black flex items-center justify-center">
+                    <img id="galleryImg" class="w-full h-full object-cover" src="" alt="Nossa Foto" onerror="this.src='https://placehold.co/400x300/0077be/ffffff?text=Foto+do+Casal'">
+                </div>
+                <p id="galleryCaption" class="font-vt text-2xl text-mamma-deep mt-3 min-h-[50px] flex items-center justify-center font-bold">
+                    Carregando fotos...
+                </p>
+            </div>
+
+            <div class="flex justify-between gap-2 pt-1">
+                <button onclick="prevPhoto()" class="pixel-btn px-4 py-2 text-xs">
+                    ⬅️ ANTERIOR
+                </button>
+                <button onclick="nextPhoto()" class="pixel-btn pixel-btn-pink px-4 py-2 text-xs">
+                    PRÓXIMA ➡️
+                </button>
+            </div>
+
+            <button id="finishGalleryBtn" onclick="goToScreen(5)" class="pixel-btn bg-green-400 w-full py-3 text-xs hidden mt-2">
+                IR PARA O PEDIDO FINAL 💍
+            </button>
+        </section>
+
+        <!-- ==================== TELA 5: ALIANÇA & CONTRATO COMPLETO ==================== -->
+        <section id="screen5" class="pixel-box p-5 text-center space-y-4 hidden max-h-[85vh] overflow-y-auto">
+            <h2 class="font-pixel text-xs text-mamma-pink leading-relaxed">
+                O GRANDE GRAN FINALE 🌟
+            </h2>
+
+            <p class="font-vt text-3xl font-bold text-mamma-deep">
+                "Aceitaria casar comigo novamente?"
+            </p>
+
+            <div class="my-2 flex justify-center cursor-pointer" onclick="toggleRingBox()">
+                <div class="relative float-pixel">
+                    <svg id="ringBoxSvg" class="w-28 h-28 glow-pixel" viewBox="0 0 64 64" fill="none">
+                        <ellipse cx="32" cy="56" rx="20" ry="4" fill="rgba(0,0,0,0.2)"/>
+                        <rect x="16" y="32" width="32" height="20" fill="#900C3F" stroke="#000" stroke-width="2"/>
+                        <rect x="18" y="34" width="28" height="4" fill="#C70039"/>
+
+                        <g id="boxLidClosed">
+                            <rect x="14" y="20" width="36" height="14" fill="#C70039" stroke="#000" stroke-width="2"/>
+                            <rect x="14" y="30" width="36" height="4" fill="#900C3F"/>
+                            <rect x="30" y="31" width="4" height="4" fill="#ffb703" stroke="#000" stroke-width="1"/>
+                        </g>
+
+                        <g id="boxLidOpened" class="hidden">
+                            <polygon points="14,20 50,20 46,6 18,6" fill="#C70039" stroke="#000" stroke-width="2"/>
+                            <rect x="20" y="26" width="24" height="8" fill="#1a1a1a"/>
+                            <circle cx="32" cy="28" r="5" fill="none" stroke="#ffb703" stroke-width="3"/>
+                            <polygon points="32,20 34,23 32,25 30,23" fill="#ffffff"/>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <p id="ringInstruction" class="font-vt text-xl text-gray-700">
+                Toque na caixinha para abrir 💍
+            </p>
+
+            <!-- CONTRATO DETALHADO E COMPLETO -->
+            <div id="contractArea" class="hidden space-y-4 pt-2 border-t-2 border-black text-left">
+                <div class="bg-[#fffdf0] border-2 border-black p-4 font-vt text-lg leading-tight space-y-3">
+                    <p class="font-bold text-center text-mamma-deep text-2xl border-b-2 border-black pb-2 font-pixel text-xs">
+                        📜 CONTRATO OFICIAL DE RENOVAÇÃO DO AMOR ETERNO
+                    </p>
+
+                    <p class="text-gray-800">
+                        Firmado nesta data especial entre <strong>Yury (O Marido Apaixonado)</strong> e <strong>Sabrina (A Namorada/Esposa Perfeita)</strong>.
+                    </p>
+
+                    <div class="space-y-2 text-base text-gray-900 border-l-2 border-mamma-pink pl-2">
+                        <p><strong>CLÁUSULA 1ª (DO BUQUÊ):</strong> A contratada fica ciente de que o contratante tentou dar um buquê real, porém foi vítima do golpe do dia 5. O buquê digital de pixel art substitui com valor sentimental ilimitado.</p>
+                        
+                        <p><strong>CLÁUSULA 2ª (DAS RISADAS):</strong> Fica estipulado o compromisso diário de rir das piadas do Yury, mesmo quando forem ruins, e assistir filmes juntinhos estilo Mamma Mia! nas noites frias.</p>
+                        
+                        <p><strong>CLÁUSULA 3ª (DOS DOCES):</strong> É obrigatória a partilha de sobremesas e o direito contínuo a abraços apertados sem motivo prévio.</p>
+                        
+                        <p><strong>CLÁUSULA 4ª (DA VALIDADE):</strong> Este contrato possui validade vitalícia e renovação automática a cada nascer do sol.</p>
+                    </div>
+
+                    <p class="text-center font-bold text-mamma-pink pt-1">
+                        "Lay All Your Love on Me - Hoje, amanhã e para sempre!" 💙✨
+                    </p>
+                </div>
+
+                <form onsubmit="sendContract(event)" class="space-y-3">
+                    <div>
+                        <label class="font-pixel text-[9px] text-mamma-deep">E-MAIL DA SABRINA:</label>
+                        <input type="email" id="wifeEmail" required placeholder="sabrina@email.com" 
+                               class="w-full p-2 border-2 border-black font-vt text-xl bg-white">
+                    </div>
+                    <div>
+                        <label class="font-pixel text-[9px] text-mamma-deep">E-MAIL DO YURY:</label>
+                        <input type="email" id="husbandEmail" required placeholder="yury@email.com" 
+                               class="w-full p-2 border-2 border-black font-vt text-xl bg-white">
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="pixel-btn pixel-btn-pink w-full py-3 text-xs">
+                        ✍️ ASSINAR E ENVIAR CONTRATO
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ==================== MODAL DE SUCESSO ==================== -->
+        <div id="successModal" class="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 hidden">
+            <div class="pixel-box p-6 text-center space-y-4 max-w-xs bg-white">
+                <div class="text-4xl animate-bounce">💖</div>
+                <h3 class="font-pixel text-xs text-mamma-pink">CONTRATO REGISTRADO!</h3>
+                <p class="font-vt text-xl text-gray-800">
+                    O contrato oficial de renovação do amor foi assinado com sucesso! Te amo para sempre, Sabrina! 🥰✨
+                </p>
+                <button onclick="restartApp()" class="pixel-btn w-full py-2 text-xs">
+                    VER NOVAMENTE 🔄
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // Inicializa o EmailJS com a Public Key do Yury
+        (function(){
+            emailjs.init("p5OyOhhzmsffNU2UR");
+        })();
+
+        // 13 Fotos Diretas fornecidas
+        const photos = [
+            { url: "https://i.ibb.co/x8tJ5hs7/Whats-App-Image-2026-11-06-at-23-22-38.jpg", caption: "Para todo sempre, Yury e Sabrina! 💙" },
+            { url: "https://i.ibb.co/FLKVvxjP/Whats-App-Image-2026-11-06-at-23-22-38-2.jpg", caption: "Cada instante com você é puro encanto ✨" },
+            { url: "https://i.ibb.co/0w1snfQ/Whats-App-Image-2026-11-06-at-23-22-38-4.jpg", caption: "Amor verdadeiro e parceria em tudo 🌴" },
+            { url: "https://i.ibb.co/LzJwjFX9/Whats-App-Image-2026-11-06-at-23-22-38-6.jpg", caption: "Meu raio de sol nos dias azuis! ☀️" },
+            { url: "https://i.ibb.co/6R20dsFh/Whats-App-Image-2026-11-06-at-23-22-38-7.jpg", caption: "Lado a lado em qualquer aventura 🗺️" },
+            { url: "https://i.ibb.co/39sFQpgp/Whats-App-Image-2026-11-06-at-23-22-38-9.jpg", caption: "Nem o golpe do buquê estraga nosso dia! 😂" },
+            { url: "https://i.ibb.co/j9S4HnXD/Whats-App-Image-2026-11-06-at-23-22-38-10.jpg", caption: "Obrigado por ser quem você é 💖" },
+            { url: "https://i.ibb.co/VYNnz0jH/Whats-App-Image-2026-11-06-at-23-22-38-11.jpg", caption: "Construindo nossa história dia após dia 🏡" },
+            { url: "https://i.ibb.co/F4csbrFM/Whats-App-Image-2026-11-06-at-23-22-38-12.jpg", caption: "Risadas garantidas e muito amor 🌸" },
+            { url: "https://i.ibb.co/5hbwN7wZ/Whats-App-Image-2026-11-06-at-23-22-38-13.jpg", caption: "Vibe inesquecível de Mamma Mia! ☀️" },
+            { url: "https://i.ibb.co/yrrLw46/Whats-App-Image-2026-11-06-at-23-22-38-14.jpg", caption: "Minha parceira de todas as horas 💕" },
+            { url: "https://i.ibb.co/XfPfrSVW/Whats-App-Image-2026-11-06-at-23-22-38-15.jpg", caption: "Sempre comemorando a vida ao teu lado ✨" },
+            { url: "https://i.ibb.co/rfKnCrdg/Whats-App-Image-2026-11-06-at-23-22-38-16.jpg", caption: "Momentos inesquecíveis juntas & juntos! 💍" }
+        ];
+
+        let currentPhotoIndex = 0;
+        let isPlaying = false;
+
+        function toggleAudio() {
+            const audio = document.getElementById('mammaAudio');
+            const icon = document.getElementById('musicIcon');
+            const text = document.getElementById('musicText');
+
+            if (!isPlaying) {
+                audio.play().then(() => {
+                    isPlaying = true;
+                    icon.innerText = "⏸️";
+                    text.innerText = "LAY ALL YOUR LOVE ON ME";
+                }).catch(e => console.log("Permissão de áudio necessária", e));
+            } else {
+                audio.pause();
+                isPlaying = false;
+                icon.innerText = "🎵";
+                text.innerText = "PLAY MÚSICA";
+            }
+        }
+
+        function goToScreen(screenNum) {
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`screen${i}`).classList.add('hidden');
+            }
+            document.getElementById(`screen${screenNum}`).classList.remove('hidden');
+
+            if (screenNum === 4) {
+                updateGallery();
+            }
+        }
+
+        function openGift() {
+            if (!isPlaying) toggleAudio();
+            confetti({
+                particleCount: 90,
+                spread: 80,
+                origin: { y: 0.6 },
+                colors: ['#0077be', '#ff2a85', '#ffb703', '#ffffff']
+            });
+            setTimeout(() => goToScreen(2), 500);
+        }
+
+        function runAway(e) {
+            if (e) e.preventDefault();
+            const btn = document.getElementById('noBtn');
+            const container = document.getElementById('buttonArea');
+            
+            const containerRect = container.getBoundingClientRect();
+            const btnRect = btn.getBoundingClientRect();
+
+            const maxX = containerRect.width - btnRect.width;
+            const maxY = containerRect.height - btnRect.height;
+
+            const randomX = Math.floor(Math.random() * maxX) - (maxX / 2);
+            const randomY = Math.floor(Math.random() * maxY) - (maxY / 2);
+
+            btn.style.transform = `translate(${randomX}px, ${randomY}px)`;
+            
+            const hints = [
+                "Nops! Tente de novo! 😜",
+                "Errou o botão! Ops! 🏃‍♂️",
+                "Certeza mesmo?? 💖",
+                "O 'Não' fugiu de medo! 😂"
+            ];
+            document.getElementById('escapeHint').innerText = hints[Math.floor(Math.random() * hints.length)];
+        }
+
+        function acceptDate() {
+            confetti({ particleCount: 120, spread: 90, origin: { y: 0.5 } });
+            goToScreen(4);
+        }
+
+        function updateGallery() {
+            const photo = photos[currentPhotoIndex];
+            document.getElementById('galleryImg').src = photo.url;
+            document.getElementById('galleryCaption').innerText = photo.caption;
+            document.getElementById('photoCounter').innerText = `${currentPhotoIndex + 1} / ${photos.length}`;
+
+            if (currentPhotoIndex === photos.length - 1) {
+                document.getElementById('finishGalleryBtn').classList.remove('hidden');
+            }
+        }
+
+        function nextPhoto() {
+            currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
+            updateGallery();
+        }
+
+        function prevPhoto() {
+            currentPhotoIndex = (currentPhotoIndex - 1 + photos.length) % photos.length;
+            updateGallery();
+        }
+
+        function toggleRingBox() {
+            document.getElementById('boxLidClosed').classList.add('hidden');
+            document.getElementById('boxLidOpened').classList.remove('hidden');
+            document.getElementById('ringInstruction').innerText = "Aliança aberta com carinho! ✨";
+            document.getElementById('contractArea').classList.remove('hidden');
+
+            confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+        }
+
+        function sendContract(event) {
+            event.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            const wifeEmail = document.getElementById('wifeEmail').value.trim();
+            const husbandEmail = document.getElementById('husbandEmail').value.trim();
+            const originalText = "✍️ ASSINAR E ENVIAR CONTRATO";
+
+            submitBtn.innerText = "ENVIANDO...";
+            submitBtn.disabled = true;
+
+            // Um envio por destinatário: o EmailJS usa {{to_email}} no campo "To Email" do template
+            const baseParams = {
+                email_sabrina: wifeEmail,
+                email_yury: husbandEmail
+            };
+
+            const sendTo = (address) =>
+                emailjs.send("service_19kafmo", "template_2eha2c6", { ...baseParams, to_email: address });
+
+            Promise.all([sendTo(wifeEmail), sendTo(husbandEmail)])
+                .then(function(responses) {
+                    console.log('SUCCESS!', responses);
+                    submitBtn.innerText = originalText;
+                    submitBtn.disabled = false;
+                    document.getElementById('successModal').classList.remove('hidden');
+                    confetti({ particleCount: 150, spread: 100 });
+                })
+                .catch(function(error) {
+                    // Agora o erro real aparece (status + texto do EmailJS)
+                    console.error('FAILED...', error);
+                    alert("Não foi possível enviar o e-mail.\n\nErro: " +
+                          (error && error.status ? error.status + " - " : "") +
+                          (error && error.text ? error.text : error));
+                    submitBtn.innerText = originalText;
+                    submitBtn.disabled = false;
+                });
+        }
+
+        function restartApp() {
+            document.getElementById('successModal').classList.add('hidden');
+            currentPhotoIndex = 0;
+            document.getElementById('boxLidClosed').classList.remove('hidden');
+            document.getElementById('boxLidOpened').classList.add('hidden');
+            document.getElementById('contractArea').classList.add('hidden');
+            goToScreen(1);
+        }
+    </script>
+</body>
+</html>
